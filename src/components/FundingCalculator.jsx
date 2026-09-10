@@ -1347,7 +1347,7 @@ export default function FundingCalculator() {
 
               {/* Footer info */}
               <div className="mt-6 text-sm text-hopscotch-forest/50 space-y-1 text-center">
-                <p>Session fees effective from April 2026 · Meal prices effective from 7 September 2026</p>
+                <p>Session fees effective from April 2026 · Meal prices effective from September 2026</p>
                 <p>This is an estimate - final fees confirmed at booking</p>
               </div>
             </div>
