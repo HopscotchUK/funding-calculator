@@ -470,7 +470,7 @@ export default function FundingCalculator() {
         {/* Disclaimer */}
         <div className="mb-6 p-4 bg-hopscotch-sunshine/20 border border-hopscotch-sunshine/30 rounded-xl text-center">
           <p className="text-sm text-hopscotch-forest/80">
-            <strong>Please note:</strong> This is an estimate calculator only. Actual fees will be confirmed when you make a booking with the nursery. Hot lunch and hot/cold tea prices shown are effective from 7 September 2026.
+            <strong>Please note:</strong> This is an estimate calculator only. Actual fees will be confirmed when you make a booking with the nursery.
           </p>
         </div>
 
