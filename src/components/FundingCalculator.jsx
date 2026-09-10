@@ -333,7 +333,7 @@ export default function FundingCalculator() {
     body += `-`.repeat(30) + `\n`;
     body += `• This is an estimate - final fees confirmed at booking\n`;
     body += `• Session fees effective from April 2026\n`;
-    body += `• Hot lunch and hot/cold tea prices effective from 7 September 2026\n`;
+    body += `• Hot lunch and hot/cold tea prices effective from September 2026\n`;
     if (funding.eligible || isFutureEligible) {
       if (needsFundingCode) {
         body += `• Apply for your funding code at beststartinlife.gov.uk\n`;
