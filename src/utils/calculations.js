@@ -306,12 +306,18 @@ export function calculateUnfundedCost(days, nursery, meals) {
 
 // Calculate funded cost
 export function calculateFundedCost(days, nursery, fundedHours, includeEnrichment, meals) {
-  const totalHours = calculateTotalHours(days, nursery);
   const maxPerDay = nursery.funding.maxFundedHoursPerDay;
 
   // Government rule: funded hours are capped per-day (typically 10h/day).
-  // Sum each day's hours with the per-day cap applied before comparing to the entitlement.
+  // Spend the funded-hours entitlement down day by day, in the order the days
+  // appear (Mon-Fri), so any leftover hours on a given day are priced at that
+  // day's own session rate (morning/afternoon/full day) rather than a single
+  // flat nursery-wide rate.
+  let fundedBalance = fundedHours;
   let maxFundableHours = 0;
+  let unfundedHours = 0;
+  let unfundedCost = 0;
+
   Object.values(days).forEach(day => {
     let dayHours = 0;
     if (day.session && day.session !== 'none') {
@@ -321,13 +327,24 @@ export function calculateFundedCost(days, nursery, fundedHours, includeEnrichmen
     if (day.lunchHour && nursery.extras.lunchHour) {
       dayHours += nursery.extras.lunchHour.hours || 1;
     }
-    if (maxPerDay != null) dayHours = Math.min(dayHours, maxPerDay);
-    maxFundableHours += dayHours;
+
+    const cappedDayHours = maxPerDay != null ? Math.min(dayHours, maxPerDay) : dayHours;
+    maxFundableHours += cappedDayHours;
+
+    const dayFunded = Math.min(cappedDayHours, Math.max(0, fundedBalance));
+    const dayUnfunded = dayHours - dayFunded;
+    fundedBalance -= dayFunded;
+
+    if (dayUnfunded > 0) {
+      const sessionConfig = day.session && day.session !== 'none' ? nursery.sessions[day.session] : null;
+      const sessionRate = sessionConfig ? sessionConfig.fee / sessionConfig.hours : nursery.funding.unfundedHourlyRate;
+      unfundedHours += dayUnfunded;
+      unfundedCost += dayUnfunded * sessionRate;
+    }
   });
 
   // Calculate how funding applies
   const actualFundedHours = Math.min(fundedHours, maxFundableHours);
-  const unfundedHours = Math.max(0, totalHours - actualFundedHours);
 
   // Calculate enrichment fee
   let enrichmentFee = 0;
@@ -344,7 +361,7 @@ export function calculateFundedCost(days, nursery, fundedHours, includeEnrichmen
     fundedCost: 0, // Funded hours are free
     enrichmentFee: enrichmentFee,
     unfundedHours: unfundedHours,
-    unfundedCost: unfundedHours * nursery.funding.unfundedHourlyRate,
+    unfundedCost: unfundedCost,
     earlyStart: 0,
     lateFinish: 0,
     lunchHour: 0,
@@ -395,13 +412,13 @@ export function calculateFundedCost(days, nursery, fundedHours, includeEnrichmen
                 breakdown.lunchHour + mealsTotal;
 
   // Calculate what unfunded would cost for savings comparison
-  const unfundedCost = calculateUnfundedCost(days, nursery, meals);
+  const noFundingCost = calculateUnfundedCost(days, nursery, meals);
 
   return {
     total,
     breakdown,
     counts,
-    savings: unfundedCost.total - total
+    savings: noFundingCost.total - total
   };
 }
 
